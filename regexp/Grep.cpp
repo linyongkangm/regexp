@@ -2,7 +2,25 @@
 #include "Grep.h"
 
 
-const char E = '$';
+
+
+vector<int> Grep::connecteds(Digraph digraph, int s)
+{
+	vector<int> v{ s };
+	return connecteds(digraph, v);
+}
+
+vector<int> Grep::connecteds(Digraph digraph, vector<int> sources)
+{
+	vector<int> vs;
+	DirectedDFS dfs(digraph, sources);
+	for (int i = 0 , len = digraph.vertexCount(); i < len; i++) {
+		if (dfs.marked(i)) {
+			vs.push_back(i);
+		}
+	}
+	return vs;
+}
 
 Grep::Grep(string &reg):digraph(reg.size()+1),length(reg.size()+1)
 {
@@ -13,9 +31,9 @@ Grep::Grep(string &reg):digraph(reg.size()+1),length(reg.size()+1)
 		int loop = i;
 		if (ch == '(') {
 			stack.push(i);
-			digraph.addEdge(i, i + 1, E);
+			digraph.addEdge(i, i + 1, ARBITRARY);
 		}else if (ch == ')') {
-			digraph.addEdge(i, i + 1, E);
+			digraph.addEdge(i, i + 1, ARBITRARY);
 			vector<int> ors;
 			int k = stack.pop();
 			char kch = reg[k];
@@ -32,31 +50,45 @@ Grep::Grep(string &reg):digraph(reg.size()+1),length(reg.size()+1)
 
 			// 处理或操作的节点连接
 			for (int o : ors) {
-				digraph.addEdge(o, i + 1, E);
-				digraph.addEdge(k, o + 1, E);
+				digraph.addEdge(o, i + 1, ARBITRARY);
+				digraph.addEdge(k, o + 1, ARBITRARY);
 			}
 		}else if (ch == '|') {
 			stack.push(i);
 		}
 		else if (ch == '*') {
-			digraph.addEdge(i, i + 1, E);
+			digraph.addEdge(i, i + 1, ARBITRARY);
 		}else {
 			digraph.addEdge(i, i + 1, ch);
 		}
 		if (i+1 < len && reg[i + 1] == '*') {
-			digraph.addEdge(i+1, loop, E);
+			digraph.addEdge(i+1, loop, ARBITRARY);
 		}
 	}
-	digraph.addEdge(len, -1, E);
+	starts = connecteds(digraph, 0);
 }
 
-Grep::~Grep()
-{
-}
 
-bool Grep::test( string & str)
+bool Grep::test( string str)
 {
+	vector<int> pc = starts;
+	for (const char c : str) {
+		vector<int> match;
+		for (int v : pc) {
+			auto edges = digraph.adjs(v);
+			for (auto e : edges) {
+				if (e.match(c)) {
+					match.push_back(e.to());
+				}
+			}
+		}
+		pc = connecteds(digraph, match);
+	}
 
+	int end = digraph.vertexCount() - 1;
+	for (int v : pc) {
+		if (v == end) return true;
+	}
 	return false;
 }
 

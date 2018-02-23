@@ -15,12 +15,19 @@ int Edge::to()
 	return w;
 }
 
-bool Edge::match(char32_t c)
+bool Edge::match(char c)
 {
 	return ch == c;
+}
+
+bool Edge::isArbitrary()
+{
+	return  ch == ARBITRARY;
 }
 
 char Edge::matchValue()
 {
 	return ch;
 }
+
+
