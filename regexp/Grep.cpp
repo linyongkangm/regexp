@@ -55,14 +55,14 @@ Grep::Grep(string &reg):digraph(reg.size()+1),length(reg.size()+1)
 			}
 		}else if (ch == '|') {
 			stack.push(i);
-		}
-		else if (ch == '*') {
-			digraph.addEdge(i, i + 1, ARBITRARY);
 		}else {
 			digraph.addEdge(i, i + 1, ch);
 		}
-		if (i+1 < len && reg[i + 1] == '*') {
+		if (reg[i + 1] == '*') {
 			digraph.addEdge(i+1, loop, ARBITRARY);
+			digraph.addEdge(loop, i+1, ARBITRARY);
+			digraph.addEdge(i+1, i + 2, ARBITRARY);
+			i++;
 		}
 	}
 	starts = connecteds(digraph, 0);
