@@ -55,13 +55,22 @@ Grep::Grep(string &reg):digraph(reg.size()+1),length(reg.size()+1)
 			}
 		}else if (ch == '|') {
 			stack.push(i);
-		}else {
+		}
+		else if (ch == '.') {
+			digraph.addEdge(i, i + 1, ARBITRARY);
+		}
+		else {
 			digraph.addEdge(i, i + 1, ch);
 		}
 		if (reg[i + 1] == '*') {
 			digraph.addEdge(i+1, loop, ARBITRARY);
 			digraph.addEdge(loop, i+1, ARBITRARY);
 			digraph.addEdge(i+1, i + 2, ARBITRARY);
+			i++;
+		}
+		if (reg[i + 1] == '?') {
+			digraph.addEdge(loop, i + 1, ARBITRARY);
+			digraph.addEdge(i + 1, i + 2, ARBITRARY);
 			i++;
 		}
 	}
